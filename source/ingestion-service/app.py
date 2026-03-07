@@ -36,6 +36,21 @@ topic_list = ["mars/telemetry/solar_array",
 for topic in topic_list:
     WS_URLs.append(f"ws://localhost:8080/api/telemetry/ws?topic={topic}")
 
+class Measurement(BaseModel):
+    metric: str
+    value: float
+    unit: str | None = None
+
+class NormalizedEvent(BaseModel):
+    event_id: str
+    source: str
+    sensor_id: str
+    occurred_at: datetime
+    status: str | None = None
+    measurements: list[Measurement]
+    metadata: dict[str, Any] | None = None
+
+
 
 def store_event(event: NormalizedEvent) -> None:
     latest_events[event.sensor_id] = event
@@ -166,20 +181,8 @@ EVENT_CLASS_MAP = {
     topic_list[6]: AirlockEvent,
 }
 
-class Measurement(BaseModel):
-    metric: str
-    value: float
-    unit: str | None = None
 
 
-class NormalizedEvent(BaseModel):
-    event_id: str
-    source: str
-    sensor_id: str
-    occurred_at: datetime
-    status: str | None = None
-    measurements: list[Measurement]
-    metadata: dict[str, Any] | None = None
 
 def normalize_sensor_event(data: dict[str, Any]) -> NormalizedEvent:
     measurements: list[Measurement] = []
