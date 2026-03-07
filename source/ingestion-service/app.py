@@ -5,13 +5,13 @@ import uvicorn
 from fastapi import FastAPI
 
 SENSOR_API_BASE_URL = "http://localhost:8080/api/sensors"
-POLL_INTERVAL_SECONDS = 5
+POLL_INTERVAL_SECONDS = 5 # poll every 5 seconds
 
 # Global state ----------------------------------------------------------------
 sensor_list: list[str] = []
 _poll_task: asyncio.Task | None = None
 _http_client: httpx.AsyncClient | None = None
-latest_sensor_data: dict[str, dict] = {}
+latest_sensor_data: dict[str, dict] = {} # I store the latest sensor data here
 
 
 # Background polling -----------------------------------------------------------
