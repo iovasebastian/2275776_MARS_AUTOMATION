@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Any
 from uuid import uuid4
-from broker import init_rabbitmq, publish_message, close_rabbitmq
+from broker import init_rabbitmq, publish_to_both_services, close_rabbitmq
 
 SENSOR_API_BASE_URL = "http://localhost:8080/api/sensors"
 POLL_INTERVAL_SECONDS = 5 # poll every 5 seconds
@@ -59,10 +59,9 @@ async def poll_sensors() -> None:
                 payload = response.json()
                 normalized_event = normalize_sensor_event(payload)
                 store_event(normalized_event)
-                await publish_message(
-                    routing_key="normalized.sensor",
-                    body=normalized_event.model_dump_json().encode("utf-8"),
-                )   
+                await publish_to_both_services(
+                    normalized_event.model_dump_json().encode("utf-8")
+                )
             except httpx.HTTPStatusError as exc:
                 print(
                     f"[Sensor: {sensor_name}] HTTP error "
@@ -305,9 +304,8 @@ async def websocket_listener(WS_URL : str):
 
                     normalized_event = normalize_telemetry_event(event_object)
                     store_event(normalized_event)
-                    await publish_message(
-                        routing_key="normalized.sensor",
-                        body=normalized_event.model_dump_json().encode("utf-8"),
+                    await publish_to_both_services(
+                        normalized_event.model_dump_json().encode("utf-8")
                     )
         except asyncio.TimeoutError:
             print("No message received in 10 seconds")

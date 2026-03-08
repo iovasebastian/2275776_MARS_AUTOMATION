@@ -7,11 +7,6 @@ RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT", "5672"))
 RABBITMQ_USER = os.getenv("RABBITMQ_USER", "guest")
 RABBITMQ_PASS = os.getenv("RABBITMQ_PASS", "guest")
 
-host = "localhost"
-port = 5672
-user = "guest"
-password = "guest"
-
 _connection = None
 _channel = None
 _exchange = None
@@ -21,28 +16,32 @@ async def init_rabbitmq():
     global _connection, _channel, _exchange
 
     _connection = await aio_pika.connect_robust(
-        host=host,
-        port=port,
-        login=user,
-        password=password
+        host=RABBITMQ_HOST,
+        port=RABBITMQ_PORT,
+        login=RABBITMQ_USER,
+        password=RABBITMQ_PASS
     )
 
     _channel = await _connection.channel()
 
     _exchange = await _channel.declare_exchange(
-        "sensor_events",
-        ExchangeType.DIRECT,
+        "normalized_events",
+        ExchangeType.TOPIC,
         durable=True,
     )
-    queue = await _channel.declare_queue(
-        "normalized_events",
+
+    api_queue = await _channel.declare_queue(
+        "api_service_queue",
         durable=True
     )
 
-    await queue.bind(
-        _exchange,
-        routing_key="normalized.sensor"
+    automation_queue = await _channel.declare_queue(
+        "automation_service_queue",
+        durable=True
     )
+
+    await api_queue.bind(_exchange, routing_key="normalized.api")
+    await automation_queue.bind(_exchange, routing_key="normalized.automation")
 
 
 async def publish_message(routing_key: str, body: bytes):
@@ -54,6 +53,11 @@ async def publish_message(routing_key: str, body: bytes):
         ),
         routing_key=routing_key,
     )
+
+
+async def publish_to_both_services(body: bytes):
+    await publish_message("normalized.api", body)
+    await publish_message("normalized.automation", body)
 
 
 async def close_rabbitmq():
