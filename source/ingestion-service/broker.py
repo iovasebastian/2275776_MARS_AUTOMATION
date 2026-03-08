@@ -2,10 +2,7 @@ import aio_pika
 from aio_pika import ExchangeType
 import os
 
-RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
-RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT", "5672"))
-RABBITMQ_USER = os.getenv("RABBITMQ_USER", "guest")
-RABBITMQ_PASS = os.getenv("RABBITMQ_PASS", "guest")
+RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://guest:guest@broker:5672/")
 
 _connection = None
 _channel = None
@@ -15,12 +12,7 @@ _exchange = None
 async def init_rabbitmq():
     global _connection, _channel, _exchange
 
-    _connection = await aio_pika.connect_robust(
-        host=RABBITMQ_HOST,
-        port=RABBITMQ_PORT,
-        login=RABBITMQ_USER,
-        password=RABBITMQ_PASS
-    )
+    _connection = await aio_pika.connect_robust(RABBITMQ_URL)
 
     _channel = await _connection.channel()
 

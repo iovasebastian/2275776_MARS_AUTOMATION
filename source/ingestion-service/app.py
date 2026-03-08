@@ -1,6 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
 import httpx
+import os
 import uvicorn
 from fastapi import FastAPI
 from fastapi import FastAPI
@@ -14,7 +15,8 @@ from typing import Any
 from uuid import uuid4
 from broker import init_rabbitmq, publish_to_both_services, close_rabbitmq
 
-SENSOR_API_BASE_URL = "http://localhost:8080/api/sensors"
+SIMULATOR_URL = os.getenv("SIMULATOR_URL", "http://simulator:8080")
+SENSOR_API_BASE_URL = f"{SIMULATOR_URL}/api/sensors"
 POLL_INTERVAL_SECONDS = 5 # poll every 5 seconds
 
 # Global state ----------------------------------------------------------------
@@ -26,6 +28,9 @@ latest_events: dict[str, "NormalizedEvent"] = {}
 
 WS_URLs = []
 
+# Derive the WebSocket base from SIMULATOR_URL (replace http(s) with ws(s))
+_ws_base = SIMULATOR_URL.replace("https://", "wss://").replace("http://", "ws://")
+
 topic_list = ["mars/telemetry/solar_array", 
               "mars/telemetry/radiation",
               "mars/telemetry/life_support",
@@ -35,7 +40,7 @@ topic_list = ["mars/telemetry/solar_array",
               "mars/telemetry/airlock"
             ]
 for topic in topic_list:
-    WS_URLs.append(f"ws://localhost:8080/api/telemetry/ws?topic={topic}")
+    WS_URLs.append(f"{_ws_base}/api/telemetry/ws?topic={topic}")
 
 
 def store_event(event: "NormalizedEvent") -> None:

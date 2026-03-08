@@ -10,7 +10,7 @@ from fastapi import FastAPI
 
 from rules import create_session, list_rules_for_sensor, evaluate_rule
 
-RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://guest:guest@broker:5672/")
 SIMULATOR_URL = os.getenv("SIMULATOR_URL", "http://simulator:8080")
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:////app/data/rules.db")
 
