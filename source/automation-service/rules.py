@@ -27,11 +27,11 @@ def create_session(database_url: str):
     Base.metadata.create_all(bind=engine)
     return sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def evaluate_condition(current_value: float, op_str: str, threshold: float) -> bool:
-    op = OPERATORS.get(op_str)
+def evaluate_rule(rule: AutomationRule, current_value: float) -> bool:
+    op = OPERATORS.get(rule.operator)
     if not op:
         return False
-    return op(current_value, threshold)
+    return op(current_value, rule.threshold_value)
 
 def get_all_rules(db_session):
     return db_session.query(AutomationRule).all()
