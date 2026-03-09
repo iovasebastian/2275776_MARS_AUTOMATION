@@ -275,6 +275,36 @@ export default function App() {
     loadRules();
   }, []);
 
+  // ---- Actuator polling: fetch on mount + every second ----
+  useEffect(() => {
+    const ACTUATOR_POLL_INTERVAL = 1000;
+
+    const fetchActuators = async () => {
+      try {
+        const data = await request('/actuators');
+        // Expects { actuators: { cooling_fan: "ON", ... } }
+        const map = data?.actuators;
+        if (map && typeof map === 'object') {
+          setActuators((prev) => {
+            const next = { ...prev };
+            for (const name of ACTUATORS) {
+              if (map[name] !== undefined) {
+                next[name] = map[name];
+              }
+            }
+            return next;
+          });
+        }
+      } catch {
+        // Silently ignore – the UI will keep its last known state
+      }
+    };
+
+    fetchActuators();                                       // initial fetch
+    const id = setInterval(fetchActuators, ACTUATOR_POLL_INTERVAL); // periodic poll
+    return () => clearInterval(id);
+  }, []);
+
   useEffect(() => {
     const ws = new WebSocket(wsUrl('/ws'));
 
