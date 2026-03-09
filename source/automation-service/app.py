@@ -34,9 +34,25 @@ state: Dict[str, Any] = {
 async def trigger_actuator(client: httpx.AsyncClient, actuator_name: str, action_state: str) -> None:
     url = f"{SIMULATOR_URL}/api/actuators/{actuator_name}"
     payload = {"state": action_state}
-    resp = await client.post(url, json=payload, timeout=10)
-    resp.raise_for_status()
+    try:
+        resp = await client.post(url, json=payload, timeout=10)
+        resp.raise_for_status()
+    except Exception as e:
+        logger.warning("Actuator failed to change with error", e)
 
+async def get_actuator_state(client: httpx.AsyncClient, actuator_name: str):
+    url = f"{SIMULATOR_URL}/api/actuators"
+    try:
+        resp = await client.get(url, timeout=10)
+        resp.raise_for_status()
+
+        data = resp.json()
+        actuator_state = data["actuators"][actuator_name]
+        print("!!!! actuator state:", actuator_state)
+
+        return actuator_state
+    except Exception as e:
+        logger.warning("Error trying to get the actuator state: %s", e)
 
 async def process_event(payload: Dict[str, Any], client: httpx.AsyncClient) -> None:
     sensor_id = payload.get("sensor_id")
@@ -71,16 +87,21 @@ async def process_event(payload: Dict[str, Any], client: httpx.AsyncClient) -> N
                 try:
                     if evaluate_rule(rule, float(value)):
                         try:
-                            await trigger_actuator(client, rule.actuator_name, rule.action_state)
-                            logger.info(
-                                "Rule %s triggered actuator %s=%s for sensor=%s metric=%s value=%s",
-                                rule.id,
-                                rule.actuator_name,
-                                rule.action_state,
-                                sensor_id,
-                                metric,
-                                value,
-                            )
+                            actuator_state = await get_actuator_state(client, rule.actuator_name)
+                            logger.info("Actuator state: %s | Rule state: %s", actuator_state, rule.action_state)
+                            if actuator_state != rule.action_state:
+                                await trigger_actuator(client, rule.actuator_name, rule.action_state)
+                                logger.info(
+                                    "Rule %s triggered actuator %s=%s for sensor=%s metric=%s value=%s",
+                                    rule.id,
+                                    rule.actuator_name,
+                                    rule.action_state,
+                                    sensor_id,
+                                    metric,
+                                    value,
+                                )
+                            else:
+                                logger.info("State already matches rule!")
                         except Exception as exc:
                             logger.warning("Failed actuator trigger for rule %s: %s", rule.id, exc)
                 except Exception as exc:
