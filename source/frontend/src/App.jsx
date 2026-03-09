@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8080').replace(/\/$/, '');  //When connecting to the backend, modify port to 8003
 const RULES_KEY = 'mars-rules-local';
 
 const SENSORS = [
@@ -139,6 +139,12 @@ export default function App() {
   const [actuators, setActuators] = useState({});
   const [latest, setLatest] = useState({});
   const [series, setSeries] = useState(Object.fromEntries(TOPICS.map((t) => [t, []])));
+  /* RemoteRules: Whether to use the "backend rule interface" switch (boolean value).
+  True: The backend is available, and rule changes will be synchronized to the server by calling 'http://localhost:8003/db-schema'.
+  False: The backend is unavailable. Enter local mode and save the rules to localStorage.
+  This value is determined in loadRules based on whether the/db schema request is successful.
+  The current backend connection is successful, Romote can be deleted.
+  */
   const [rules, setRules] = useState([]);
   const [remoteRules, setRemoteRules] = useState(true);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -146,6 +152,7 @@ export default function App() {
 
   const canEdit = Boolean(form.id);
 
+  // Rule based signature, used for front-end rule deduplication verification.
   const closeDialog = () => setDialog({ open: false, mode: 'info', message: '', ruleId: '' });
   const showInfo = (message) => setDialog({ open: true, mode: 'info', message, ruleId: '' });
   const confirmDelete = (ruleId) => setDialog({ open: true, mode: 'confirm', message: 'Are you sure you want to delete this rule?', ruleId });
@@ -203,7 +210,7 @@ export default function App() {
   useEffect(() => {
     const loadRules = async () => {
       try {
-        const data = await request('/api/rules');  //Backend rule interface is available ->remoteRules==true
+        const data = await request('/db-schema');  //Backend rule interface is available ->remoteRules==true
         setRules(uniqueRules(data.rules || []));
         setRemoteRules(true);
       } catch {
@@ -241,6 +248,7 @@ export default function App() {
       enabled: form.enabled !== false
     };
 
+    // Frontend validates rule deduplication.
     const peerRules = rules.filter((r) => r.id !== candidate.id);
     if (peerRules.some((r) => ruleSig(r) === ruleSig(candidate))) {  //Determine rule conflicts
       showInfo('The rule already exists.');
