@@ -32,23 +32,23 @@ All heterogeneous sensor payloads (REST-polled and WebSocket-streamed) are norma
 
 ## NormalizedEvent
 
-| Field          | Type                     | Required | Description                                                                 |
-| -------------- | ------------------------ | -------- | --------------------------------------------------------------------------- |
-| `event_id`     | `string` (UUID)          | Yes      | Unique identifier for this event instance.                                  |
-| `source`       | `string`                 | Yes      | Origin type: `"sensor-api"` for REST-polled sensors, `"telemetry-ws"` for WebSocket streams. |
-| `sensor_id`    | `string`                 | Yes      | Logical sensor name (e.g., `"greenhouse_temperature"`, `"solar_array"`).    |
-| `occurred_at`  | `string` (ISO 8601)      | Yes      | Timestamp when the reading was captured or emitted by the simulator.        |
-| `status`       | `string` or `null`       | No       | Device-reported status (e.g., `"nominal"`, `"warning"`). Null if not provided. |
-| `measurements` | `array[Measurement]`     | Yes      | One or more metric readings from this event.                                |
-| `metadata`     | `object` or `null`       | No       | Additional context (e.g., `topic`, `subsystem`, `loop`). Null if not applicable. |
+| Field          | Type                 | Required | Description                                                  |
+| -------------- | -------------------- | -------- | ------------------------------------------------------------ |
+| `event_id`     | `string` (UUID)      | Yes      | Unique identifier for this event instance.                   |
+| `source`       | `string`             | Yes      | Origin type: `"sensor-api"` for REST-polled sensors, `"telemetry-ws"` for WebSocket streams. |
+| `sensor_id`    | `string`             | Yes      | Logical sensor name.                                         |
+| `occurred_at`  | `string` (ISO 8601)  | Yes      | Timestamp when the reading was captured or emitted by the simulator. |
+| `status`       | `string` or `null`   | No       | Device-reported status. Null if not provided.                |
+| `measurements` | `array[Measurement]` | Yes      | One or more metric readings from this event.                 |
+| `metadata`     | `object` or `null`   | No       | Additional context. Null if not applicable.                  |
 
 ## Measurement
 
-| Field    | Type               | Required | Description                                              |
-| -------- | ------------------ | -------- | -------------------------------------------------------- |
-| `metric` | `string`           | Yes      | Name of the measured quantity (e.g., `"power_kw"`, `"temperature_c"`, `"level_pct"`). |
-| `value`  | `float`            | Yes      | Numeric reading value.                                   |
-| `unit`   | `string` or `null` | No       | Unit of measurement (e.g., `"°C"`, `"kW"`, `"L/min"`, `"%"`). Null if dimensionless. |
+| Field    | Type               | Required | Description                                 |
+| -------- | ------------------ | -------- | ------------------------------------------- |
+| `metric` | `string`           | Yes      | Name of the measured quantity.              |
+| `value`  | `float`            | Yes      | Numeric reading value.                      |
+| `unit`   | `string` or `null` | No       | Unit of measurement. Null if dimensionless. |
 
 # RULE MODEL
 
