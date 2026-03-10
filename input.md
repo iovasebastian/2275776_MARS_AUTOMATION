@@ -25,3 +25,42 @@ The system dashboard displays various environmental data received from sensors i
 18) As a Platform Administrator, I want the data ingestion, rule evaluation, and web interface to run as separate isolated microservices, so that a crash in the web UI does not stop the background automation engine from keeping the crew alive.
 19) As a Platform Administrator, I want all defined automation rules to be saved to a persistent database, so that critical safety logic is immediately restored without manual data entry after a system reboot.
 20) As a Platform Administrator, I want the platform to automatically normalize all heterogeneous device payloads into a single standard event format internally, so that future developers can add new features without worrying about device-specific dialects.
+
+# STANDARD EVENT SCHEMA
+
+All heterogeneous sensor payloads (REST-polled and WebSocket-streamed) are normalized into a single internal representation before being published to the message broker. This unified schema is called **NormalizedEvent**.
+
+## NormalizedEvent
+
+| Field          | Type                     | Required | Description                                                                 |
+| -------------- | ------------------------ | -------- | --------------------------------------------------------------------------- |
+| `event_id`     | `string` (UUID)          | Yes      | Unique identifier for this event instance.                                  |
+| `source`       | `string`                 | Yes      | Origin type: `"sensor-api"` for REST-polled sensors, `"telemetry-ws"` for WebSocket streams. |
+| `sensor_id`    | `string`                 | Yes      | Logical sensor name (e.g., `"greenhouse_temperature"`, `"solar_array"`).    |
+| `occurred_at`  | `string` (ISO 8601)      | Yes      | Timestamp when the reading was captured or emitted by the simulator.        |
+| `status`       | `string` or `null`       | No       | Device-reported status (e.g., `"nominal"`, `"warning"`). Null if not provided. |
+| `measurements` | `array[Measurement]`     | Yes      | One or more metric readings from this event.                                |
+| `metadata`     | `object` or `null`       | No       | Additional context (e.g., `topic`, `subsystem`, `loop`). Null if not applicable. |
+
+## Measurement
+
+| Field    | Type               | Required | Description                                              |
+| -------- | ------------------ | -------- | -------------------------------------------------------- |
+| `metric` | `string`           | Yes      | Name of the measured quantity (e.g., `"power_kw"`, `"temperature_c"`, `"level_pct"`). |
+| `value`  | `float`            | Yes      | Numeric reading value.                                   |
+| `unit`   | `string` or `null` | No       | Unit of measurement (e.g., `"°C"`, `"kW"`, `"L/min"`, `"%"`). Null if dimensionless. |
+
+# RULE MODEL
+
+Automation rules follow a simple **IF-THEN** pattern and are persisted in an SQLite database shared between the `automation-service` (evaluation) and the `api-service` (CRUD).
+
+## Database schema: `rules` table
+
+| Column            | Type      | Constraints       | Description                                      |
+| ----------------- | --------- | ----------------- | ------------------------------------------------ |
+| `id`              | `INTEGER` | PRIMARY KEY, AUTO | Unique rule identifier.                          |
+| `sensor_name`     | `TEXT`    | NOT NULL          | Sensor ID to monitor.                            |
+| `operator`        | `TEXT`    | NOT NULL          | Comparison operator (`<`, `<=`, `=`, `>`, `>=`). |
+| `threshold_value` | `REAL`    | NOT NULL          | Numeric threshold for the condition.             |
+| `actuator_name`   | `TEXT`    | NOT NULL          | Target actuator.                                 |
+| `action_state`    | `TEXT`    | NOT NULL          | Desired actuator state: `"ON"` or `"OFF"`.       |
