@@ -4,14 +4,23 @@ const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8003').repl
 const RULES_KEY = 'mars-rules-local';
 
 const SENSORS = [
-  { id: 'greenhouse_temperature', label: 'greenhouse_temperature', unit: 'C' },
-  { id: 'entrance_humidity', label: 'entrance_humidity', unit: '%' },
-  { id: 'co2_hall', label: 'co2_hall', unit: 'ppm' },
-  { id: 'hydroponic_ph', label: 'hydroponic_ph', unit: 'pH' },
-  { id: 'water_tank_level', label: 'water_tank_level', unit: '%' },
-  { id: 'corridor_pressure', label: 'corridor_pressure', unit: 'kPa' },
-  { id: 'air_quality_pm25', label: 'air_quality_pm25', unit: 'ug/m3' },
-  { id: 'air_quality_voc', label: 'air_quality_voc', unit: 'ppb' }
+  // ── HTTP-polled sensors ──
+  { id: 'greenhouse_temperature', label: 'Greenhouse Temperature', unit: '°C' },
+  { id: 'entrance_humidity', label: 'Entrance Humidity', unit: '%' },
+  { id: 'co2_hall', label: 'CO₂ Hall', unit: 'ppm' },
+  { id: 'hydroponic_ph', label: 'Hydroponic pH', unit: 'pH' },
+  { id: 'water_tank_level', label: 'Water Tank Level', unit: '%' },
+  { id: 'corridor_pressure', label: 'Corridor Pressure', unit: 'kPa' },
+  { id: 'air_quality_pm25', label: 'Air Quality PM2.5', unit: 'µg/m³' },
+  { id: 'air_quality_voc', label: 'Air Quality VOC', unit: 'ppb' },
+  // ── WebSocket telemetry sensors ──
+  { id: 'solar_array', label: 'Solar Array', unit: 'kW' },
+  { id: 'power_bus', label: 'Power Bus', unit: 'kW' },
+  { id: 'power_consumption', label: 'Power Consumption', unit: 'kW' },
+  { id: 'radiation', label: 'Radiation', unit: '' },
+  { id: 'life_support', label: 'Life Support', unit: '' },
+  { id: 'thermal_loop', label: 'Thermal Loop', unit: '°C' },
+  { id: 'airlock', label: 'Airlock', unit: 'cycles/h' },
 ];
 
 const ACTUATORS = ['cooling_fan', 'entrance_humidifier', 'hall_ventilation', 'habitat_heater'];
@@ -117,9 +126,20 @@ const sensorText = (event) => {
   }
 
   if (Array.isArray(event.measurements)) {
-    return event.measurements
-      .map((m) => `${m.metric}:${m.value}${m.unit ? ` ${m.unit}` : ''}`)
-      .join(' | ');
+    if (event.measurements.length === 1) {
+      const m = event.measurements[0];
+      return `${m.value}${m.unit ? ` ${m.unit}` : ''}`;
+    }
+    return (
+      <ul className="measurement-list">
+        {event.measurements.map((m, i) => (
+          <li key={i}>
+            <span className="metric-name">{m.metric}</span>
+            <span className="metric-value">{m.value}{m.unit ? ` ${m.unit}` : ''}</span>
+          </li>
+        ))}
+      </ul>
+    );
   }
 
   return '-';
@@ -461,12 +481,6 @@ export default function App() {
       threshold_value: String(r.threshold_value)
     });
 
-  const toggleRule = (r) => {
-    const nextRule = { ...r, enabled: !(r.enabled !== false) };
-    const next = rules.map((x) => (String(x.id) === String(r.id) ? nextRule : x));
-    persistRulesLocally(next);
-  };
-
   const removeRule = async (id) => {
     try {
       await request(`/delete-rule/${id}`, { method: 'DELETE' });
@@ -652,7 +666,6 @@ export default function App() {
                     <th>ID</th>
                     <th>Condition</th>
                     <th>Action</th>
-                    <th>Status</th>
                     <th>Operations</th>
                   </tr>
                 </thead>
@@ -662,19 +675,15 @@ export default function App() {
                       <td>{r.id}</td>
                       <td>{`IF ${r.sensor_name} ${r.operator} ${r.threshold_value}`}</td>
                       <td>{`THEN set ${r.actuator_name} to ${r.action_state}`}</td>
-                      <td>{r.enabled === false ? 'Disabled' : 'Enabled'}</td>
                       <td>
                         <button onClick={() => editRule(r)}>Edit</button>
-                        <button onClick={() => toggleRule(r)}>
-                          {r.enabled === false ? 'Enable' : 'Disable'}
-                        </button>
                         <button onClick={() => confirmDelete(r.id)}>Delete</button>
                       </td>
                     </tr>
                   ))}
                   {!rules.length && (
                     <tr>
-                      <td colSpan="5">No rules available.</td>
+                      <td colSpan="4">No rules available.</td>
                     </tr>
                   )}
                 </tbody>

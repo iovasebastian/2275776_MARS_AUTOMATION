@@ -1,9 +1,28 @@
+/* ═══════════════════════════════════════════════════
+   Dark Morandi theme — muted dark palette
+   High contrast, projector-friendly
+   ═══════════════════════════════════════════════════ */
+
 :root {
-  --bg: #0a111c;
-  --panel: #111b2c;
-  --line: #5ac8ff;
-  --text: #e8f0ff;
-  --muted: #9cb2ce;
+  --bg: #1a1917;
+  --panel: #23221f;
+  --card: #2b2a26;
+  --border: #3d3b36;
+  --border-light: #4a473f;
+  --accent: #7a9b80;          /* muted sage green */
+  --accent-hover: #8db094;
+  --accent-warm: #c4a87a;     /* warm sand highlight */
+  --text: #e8e4de;            /* warm off-white */
+  --text-secondary: #b5aea4;
+  --muted: #8a847b;
+  --danger: #c08070;
+  --on-accent: #1a1917;
+  --chart-line: #7a9b80;
+  --chart-point: #a0c4a6;
+  --chart-bg: #201f1c;
+  --toggle-on-bg: #4a6e50;
+  --toggle-off-bg: #3d3b36;
+  --shadow: rgba(0, 0, 0, 0.35);
 }
 
 * {
@@ -12,18 +31,17 @@
 
 body {
   margin: 0;
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
   color: var(--text);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(90, 200, 255, 0.16), transparent 45%),
-    radial-gradient(circle at 100% 100%, rgba(255, 142, 106, 0.16), transparent 45%),
-    var(--bg);
+  background: var(--bg);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
 }
 
 .page {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px;
 }
 
 .top,
@@ -36,76 +54,147 @@ h4 {
 
 .top h1 {
   margin: 0;
-  font-size: clamp(22px, 3vw, 34px);
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
 }
 
 .page-switch {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 16px;
   flex-wrap: wrap;
 }
 
 .page-switch button {
-  min-width: 260px;
+  min-width: 240px;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: all 0.2s ease;
 }
 
 .active-tab {
-  border-color: #5aa8e8;
-  background: #22486d;
+  background: var(--accent) !important;
+  color: var(--on-accent) !important;
+  border-color: var(--accent) !important;
 }
 
 .page-content {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .row-block {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .block {
   background: var(--panel);
-  border: 1px solid #273954;
-  border-radius: 14px;
-  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 12px var(--shadow);
 }
 
 .sensor-grid,
 .actuator-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .sensor-card,
 .actuator-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid #2f4564;
-  border-radius: 12px;
-  padding: 10px;
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  padding: 12px 14px;
   display: grid;
   gap: 8px;
+  box-shadow: 0 1px 4px var(--shadow);
+  transition: box-shadow 0.2s ease;
+}
+
+.sensor-card:hover,
+.actuator-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.sensor-card strong,
+.actuator-card strong {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.sensor-card small {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .sensor-value {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--accent-warm);
+}
+
+/* ── Structured measurement list inside sensor cards ── */
+.measurement-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.measurement-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(122, 155, 128, 0.08);
+}
+
+.metric-name {
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.metric-value {
+  font-weight: 800;
+  color: var(--text);
+  white-space: nowrap;
 }
 
 button,
 select,
 input {
-  background: #17263c;
+  background: var(--card);
   color: var(--text);
-  border: 1px solid #3b5678;
-  border-radius: 9px;
-  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  transition: border-color 0.2s ease;
 }
 
 button:hover {
-  filter: brightness(1.08);
+  border-color: var(--accent);
   cursor: pointer;
+}
+
+select:focus,
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(122, 155, 128, 0.22);
 }
 
 .actuator-actions {
@@ -119,52 +208,62 @@ button:hover {
   width: 122px;
   border-radius: 999px;
   overflow: hidden;
-  border: 1px solid #4f657f;
+  border: 1px solid var(--border);
+  transition: all 0.25s ease;
 }
 
 .toggle-switch.on {
-  background: #2f8662;
-  border-color: #56b88f;
+  background: var(--toggle-on-bg);
+  border-color: var(--accent);
 }
 
 .toggle-switch.off {
-  background: #dce3ed;
-  border-color: #b9c7d8;
+  background: var(--toggle-off-bg);
+  border-color: var(--border);
 }
 
 .toggle-switch button {
   border: 0;
   border-radius: 0;
-  padding: 5px 0;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 6px 0;
+  font-size: 13px;
+  font-weight: 700;
   background: transparent;
-  color: #133;
+  transition: all 0.2s ease;
 }
 
 .toggle-switch.on button {
-  color: #07331f;
+  color: rgba(232, 228, 222, 0.7);
 }
 
 .toggle-switch.off button {
-  color: #344459;
+  color: var(--muted);
 }
 
 .toggle-switch button.selected {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(232, 228, 222, 0.15);
+  color: var(--text);
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.toggle-switch.on button.selected {
+  background: rgba(232, 228, 222, 0.2);
+  color: #fff;
 }
 
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .chart-panel {
-  border: 1px solid #314764;
-  border-radius: 12px;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--card);
+  box-shadow: 0 1px 4px var(--shadow);
 }
 
 .chart-svg {
@@ -173,32 +272,34 @@ button:hover {
 }
 
 .chart-bg {
-  fill: #0f1a2a;
+  fill: var(--chart-bg);
 }
 
 .axis {
-  stroke: #375070;
+  stroke: var(--border-light);
   stroke-width: 1;
 }
 
 .line {
   fill: none;
-  stroke: var(--line);
-  stroke-width: 2;
+  stroke: var(--chart-line);
+  stroke-width: 2.5;
 }
 
 .point {
-  fill: #83deff;
+  fill: var(--chart-point);
 }
 
 .point-label {
-  fill: #d9f3ff;
-  font-size: 9px;
+  fill: var(--text);
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .meta {
-  fill: #89a9c8;
-  font-size: 10px;
+  fill: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .empty {
@@ -210,37 +311,41 @@ button:hover {
 .rule-form {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 10px 0 14px;
+  gap: 12px;
+  margin: 12px 0 16px;
 }
 
 .rule-form label {
   display: grid;
   gap: 4px;
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .rule-actions {
   grid-column: 1 / -1;
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .rule-action-btn {
   margin-top: 10px;
-  padding: 5px 10px;
-  font-size: 14px;
-  min-width: 138px;
-  font-weight: 700;
-  background: #e6edf6;
-  color: #2d4158;
-  border-color: #bdcbda;
+  padding: 10px 18px;
+  font-size: 15px;
+  min-width: 150px;
+  font-weight: 800;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  transition: background 0.2s ease;
 }
 
 .rule-action-btn:hover {
-  filter: brightness(0.98);
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .rules-table-wrap {
@@ -251,21 +356,38 @@ button:hover {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
-th,
-td {
-  border-bottom: 1px solid #304766;
+th {
+  border-bottom: 2px solid var(--border-light);
   text-align: left;
-  padding: 8px;
+  padding: 10px 8px;
   vertical-align: top;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+td {
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  padding: 10px 8px;
+  vertical-align: top;
+  font-weight: 500;
+}
+
+tbody tr:hover {
+  background: rgba(122, 155, 128, 0.06);
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 10, 20, 0.62);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
   display: grid;
   place-items: center;
   z-index: 1000;
@@ -273,24 +395,36 @@ td {
 
 .modal-card {
   width: min(440px, calc(100vw - 40px));
-  background: linear-gradient(180deg, #142239, #101a2b);
-  border: 1px solid #355072;
-  border-radius: 14px;
-  padding: 16px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  background: var(--panel);
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  padding: 24px 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
   text-align: center;
+}
+
+.modal-card h3 {
+  margin: 0 0 10px;
+  color: var(--text);
 }
 
 .modal-card p {
   margin: 0;
-  color: var(--muted);
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .modal-actions {
-  margin-top: 14px;
+  margin-top: 18px;
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.modal-actions button {
+  min-width: 90px;
+  font-weight: 600;
+  padding: 8px 16px;
 }
 
 @media (max-width: 920px) {
